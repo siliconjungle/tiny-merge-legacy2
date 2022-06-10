@@ -1,0 +1,20 @@
+{
+  "name": "@silicon-jungle/tiny-merge-2",
+  "type": "module",
+  "version": "0.0.0",
+  "description": "A tiny CRDT library.",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest",
+    "start": "node index.js"
+  },
+  "author": "James Addison",
+  "license": "MIT",
+  "dependencies": {
+    "events": "^3.3.0"
+  },
+  "devDependencies": {
+    "@babel/plugin-transform-modules-commonjs": "^7.18.2",
+    "jest": "^27.5.1"
+  }
+}
