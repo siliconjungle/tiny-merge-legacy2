@@ -18,6 +18,7 @@ console.log(lwwSet.getValue('Jam'))
 console.log(lwwSet.getValue('Jim'))
 console.log(lwwSet.where(['age'], '>=', 25))
 
+// The history is currently not connected to the memory. It will be in the future however.
 const history = new History()
 
 history.push([
