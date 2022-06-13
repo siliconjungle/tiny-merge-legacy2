@@ -1,4 +1,4 @@
-// Still a work in progress.
+// This will likely be replaced with history-reversable.js
 import EventEmitter from 'events'
 
 // const transaction = {
@@ -67,6 +67,7 @@ const OPERATIONS = {
   SET: 'set',
 }
 
+//
 export class History {
   constructor(transactions) {
     this.transactions = transactions
@@ -89,7 +90,11 @@ export class History {
 
   push(transaction) {
     if (this.currentIndex < this.transactions.length - 1) {
-      this.transactions.splice(this.currentIndex + 1)
+      this.transactions.splice(
+        this.currentIndex + 1,
+        this.transactions.length - this.currentIndex - 1,
+        transaction
+      )
     } else {
       this.transactions.push(transaction)
     }

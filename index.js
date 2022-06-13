@@ -1,4 +1,5 @@
 import Memory from './memory.js'
+import History, { operation } from './history-reversable.js'
 
 const SERVER_ID = '1234abc'
 
@@ -16,3 +17,34 @@ console.log(lwwSet.getValue('James'))
 console.log(lwwSet.getValue('Jam'))
 console.log(lwwSet.getValue('Jim'))
 console.log(lwwSet.where(['age'], '>=', 25))
+
+const history = new History()
+
+history.push([
+  operation.create('Bob', { name: 'Bob', age: 47 }),
+  operation.create('Sally', { name: 'Sally', age: 52 }),
+])
+
+history.push([operation.set('Sally', { name: 'Sally', age: 49 })])
+
+console.log(history.get())
+
+console.log('_STATE_', history.state)
+
+history.undo()
+
+console.log('_STATE_', history.state)
+
+history.redo()
+
+console.log('_STATE_', history.state)
+
+history.undo()
+
+history.push([operation.set('Bob', { name: 'Bob', age: 53 })])
+
+console.log('_STATE_', history.state)
+
+history.undo()
+
+console.log('_STATE_', history.state)

@@ -1,6 +1,6 @@
 import EventEmitter from 'events'
 import * as flatObject from './flat-object.js'
-import { where } from './query-operators.js'
+import { where } from './queries.js'
 
 class Memory {
   constructor(serverId) {
