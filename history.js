@@ -1,121 +1,120 @@
-// This will likely be replaced with history-reversable.js
 import EventEmitter from 'events'
+import { deepCopy } from './utils.js'
 
-// const transaction = {
-//   createdBy: 'abc123',
-//   version: 0,
-//   operations: [
-//     {
-//       type: 'set',
-//       key: '123abc',
-//       value: 'some value',
-//     },
-//   ],
-// }
+// const transaction = [
+//   {
+//     type: 'set',
+//     key: '123abc',
+//     value: 'some value',
+//   },
+// ],
 
-const getChanges = (transaction) => {
-  const changes = {}
-  transaction.operations.forEach((operation) => {
-    if (
-      operation.type === OPERATIONS.CREATE ||
-      operation.type === OPERATIONS.SET
-    ) {
-      changes[operation.key] = operation.value
-    }
-  })
-  return changes
-}
-
-const getLastOperationForKey = (transactions, index, key) => {
-  for (let i = index; i >= 0; i--) {
-    const transaction = transactions[i]
-    const operation = transaction.operations.find(
-      (operation) => operation.key === key
-    )
-    if (operation !== null) {
-      return operation
-    }
-  }
-  return null
-}
-
-const getUndoChanges = (transactions) => {
-  const changes = {}
-  const transaction = transactions[transactions.length - 1]
-
-  transaction.operations.forEach((operation) => {
-    const lastOperation = getLastOperationForKey(transactions, operation.key)
-    if (lastOperation !== null) {
-      changes[operation.key] = lastOperation.value
-    } else {
-      changes[operation.key] = null
-    }
-  })
-  return changes
-}
-
-const applyChanges = (state, changes) => {
-  const newState = {}
-  Object.keys(state).forEach((key) => {
-    newState[key] = changes[key]
-  })
-  return newState
-}
-
-const OPERATIONS = {
+export const OPERATION = {
   CREATE: 'create',
   SET: 'set',
+  DELETE: 'delete',
 }
 
-//
-export class History {
-  constructor(transactions) {
-    this.transactions = transactions
+export const operation = {
+  create: (key, value) => ({ type: OPERATION.CREATE, key, value }),
+  set: (key, value) => ({ type: OPERATION.SET, key, value }),
+  delete: (key) => ({ type: OPERATION.DELETE, key }),
+}
+
+const getInverseOperation = (state, operation) => {
+  switch (operation.type) {
+    case OPERATION.CREATE:
+      return {
+        type: OPERATION.DELETE,
+        key: operation.key,
+      }
+    case OPERATION.SET:
+      return {
+        type: OPERATION.SET,
+        key: operation.key,
+        value: state[operation.key],
+      }
+    case OPERATION.DELETE:
+      return {
+        type: OPERATION.CREATE,
+        key: operation.key,
+        value: state[operation.key],
+      }
+    default:
+      throw new Error(`Unknown operation type: ${operation.type}`)
+  }
+}
+
+const applyOperationToState = (state, operation) => {
+  const deepState = deepCopy(state)
+
+  switch (operation.type) {
+    case OPERATION.CREATE:
+      deepState[operation.key] = operation.value
+    case OPERATION.SET:
+      deepState[operation.key] = operation.value
+    case OPERATION.DELETE:
+      delete state[operation.key]
+  }
+  return deepState
+}
+
+const getUndoTransaction = (state, transaction) => {
+  const undoTransaction = transaction.map((operation) =>
+    getInverseOperation(state, operation)
+  )
+
+  return {
+    undo: undoTransaction,
+    redo: transaction,
+  }
+}
+
+class History {
+  constructor() {
+    this.stack = []
     this.currentIndex = 0
-    this.state = null
+    this.state = {}
     this.emitter = new EventEmitter()
     this.emitter.setMaxListeners(0)
   }
 
   get() {
-    return this.transactions
+    return this.stack
   }
 
-  applyChanges(changes) {
-    this.state = applyChanges(this.state, changes)
-    if (changes !== null) {
-      this.emit('changes', changes)
-    }
+  applyChanges(transaction) {
+    transaction.forEach((operation) => {
+      this.state = applyOperationToState(this.state, operation)
+    })
+
+    this.emitter.emit('changes', transaction)
   }
 
   push(transaction) {
-    if (this.currentIndex < this.transactions.length - 1) {
-      this.transactions.splice(
+    const reversableTransaction = getUndoTransaction(this.state, transaction)
+    if (this.currentIndex < this.stack.length - 1) {
+      this.stack.splice(
         this.currentIndex + 1,
-        this.transactions.length - this.currentIndex - 1,
-        transaction
+        this.stack.length - this.currentIndex - 1,
+        reversableTransaction
       )
     } else {
-      this.transactions.push(transaction)
+      this.stack.push(reversableTransaction)
     }
-    this.currentIndex = this.transactions.length + 1
-    const changes = getChanges(transaction)
-    this.applyChanges(changes)
+    this.currentIndex++
+    this.applyChanges(transaction)
   }
 
   undo() {
     this.currentIndex = Math.max(0, this.currentIndex - 1)
-    const changes = getUndoChanges(this.transactions)
-    this.applyChanges(changes)
+    console.log(this.stack[this.currentIndex])
+    this.applyChanges(this.stack[this.currentIndex].undo)
   }
 
   redo() {
-    this.currentIndex = Math.min(
-      this.transactions.length - 1,
-      this.currentIndex + 1
-    )
-    const changes = getChanges(this.transactions[this.currentIndex])
-    this.applyChanges(changes)
+    this.currentIndex = Math.min(this.stack.length - 1, this.currentIndex + 1)
+    this.applyChanges(this.stack[this.currentIndex].redo)
   }
 
   canUndo() {
@@ -123,14 +122,14 @@ export class History {
   }
 
   canRedo() {
-    return this.currentIndex < this.transactions.length - 1
+    return this.currentIndex < this.stack.length - 1
   }
 
   subscribe(event, callback) {
     this.emitter.addListener(event, callback)
   }
 
-  unsubscribe(callback) {
+  unsubscribe(event, callback) {
     this.emitter.removeListener(event, callback)
   }
 
@@ -138,3 +137,5 @@ export class History {
     return this.emitter.listenerCount(event)
   }
 }
+
+export default History
