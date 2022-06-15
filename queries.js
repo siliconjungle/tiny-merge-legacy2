@@ -72,6 +72,7 @@ export const where = (values, path, operator, value) => {
     key,
     value,
   }))
+  // If it's being done with set types, you won't need to do this.
   const filteredDocuments = filterByPath(path, documents)
   switch (operator) {
     case QUERY_OPERATOR.LESS_THAN:
