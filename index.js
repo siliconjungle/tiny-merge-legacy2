@@ -8,11 +8,6 @@ const lwwSet = new Memory(SERVER_ID, {
   name: PRIMITIVE.STRING,
   age: PRIMITIVE.STRING,
 })
-// const shelfRegister = new Memory(SERVER_ID)
-// const counterRegister = new Memory(SERVER_ID)
-// const sequencerRegister = new Memory(SERVER_ID)
-// const fractionalIndexingRegister = new Memory(SERVER_ID)
-// const appendOnlyListRegister = new Memory(SERVER_ID)
 
 lwwSet.setValue('James', { name: 'James', age: 29 }, 'user1')
 lwwSet.setValue('Jam', { name: 'Jam', age: 27 }, 'user2')
