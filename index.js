@@ -1,9 +1,13 @@
 import Memory from './memory.js'
 import History, { operation } from './history-reversable.js'
+import { PRIMITIVE } from './types.js'
 
 const SERVER_ID = '1234abc'
 
-const lwwSet = new Memory(SERVER_ID)
+const lwwSet = new Memory(SERVER_ID, {
+  name: PRIMITIVE.STRING,
+  age: PRIMITIVE.STRING,
+})
 // const shelfRegister = new Memory(SERVER_ID)
 // const counterRegister = new Memory(SERVER_ID)
 // const sequencerRegister = new Memory(SERVER_ID)
