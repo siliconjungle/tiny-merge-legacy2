@@ -58,10 +58,10 @@ history.undo()
 
 console.log('_STATE_', history.state)
 
-// The first time you connect to the server, get the entire state and the version number.
-// If it's not the first time you connect to the server, send the latest version number and the changes since that version number.
-// (This means that we will need to keep track of all changes made since you've been offline).
-// The server will send back the latest version number and any changes.
-// Any changes made on the server will be sent to you as they happen.
-// If you're online and you make a change you will attempt to push it to the server. (no latest server version is required).
-// If you receive a message from the server you will save it to local storage.
+// General thoughts on messaging:
+// - The first time you connect to the server, get the entire state and the version number.
+// - If it's not the first time you connect to the server, send the latest version number and the changes since that version number. (This means that we will need to keep track of all changes made since you've been offline).
+// - The server will send back the latest version number and any changes.
+// - Any changes made on the server will be sent to you as they happen.
+// - If you're online and you make a change you will attempt to push it to the server.
+// - If you receive a message from the server, merge it into local storage.
