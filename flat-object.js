@@ -26,6 +26,11 @@ export const getChildByKey = (flatObject, key) => {
   return flatObject[key] ?? null
 }
 
+export const hasChildChanged = (flatObject, version, serverId, key) => {
+  const value = flatObject[key]
+  return !tiny.shouldUpdate(value, version, serverId)
+}
+
 export const getChangesSinceVersion = (flatObject, version, serverId) => {
   const changes = {}
   for (const key in flatObject) {
