@@ -3,12 +3,12 @@ import * as flatObject from './flat-object.js'
 import { where } from './queries.js'
 import { valueIsType } from './types.js'
 
-class Memory {
+class Memory extends EventEmitter {
   constructor(serverId, type) {
+    super()
+    this.setMaxListeners(0)
     this.type = type
     this.serverId = serverId
-    this.emitter = new EventEmitter()
-    this.emitter.setMaxListeners(0)
     this.values = flatObject.create({}, serverId)
   }
 
@@ -16,11 +16,15 @@ class Memory {
     return where(this.values, path, operator, value)
   }
 
+  getChanges(version, serverId) {
+    return flatObject.getChangesSinceVersion(this.values, version, serverId)
+  }
+
   getValue(key) {
     return { key, value: flatObject.getChildByKey(this.values, key) }
   }
 
-  setValue(key, value, userId, version) {
+  setValue(key, value, version, serverId) {
     if (!valueIsType(value, this.type)) {
       return
     }
@@ -28,24 +32,12 @@ class Memory {
       this.values,
       key,
       value,
-      userId,
-      version
+      version,
+      serverId
     )
     if (changes !== null) {
-      this.emitter.emit(key, key, changes)
+      this.emit(key, key, changes)
     }
-  }
-
-  subscribe(key, callback) {
-    this.emitter.addListener(key, callback)
-  }
-
-  unsubscribe(key, callback) {
-    this.emitter.removeListener(key, callback)
-  }
-
-  getSubscriptionCount(key) {
-    return this.emitter.listenerCount(key)
   }
 }
 

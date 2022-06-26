@@ -1,23 +1,22 @@
-export const create = (value, userId, version = 0) => {
+export const create = (value, version, serverId) => {
   return {
     value,
     version,
-    createdBy: userId,
-    lastUpdatedBy: userId,
+    lastUpdatedBy: serverId,
   }
 }
 
-export const shouldUpdate = (data, version, userId) => {
+export const shouldUpdate = (data, version, serverId) => {
   if (data.version > version) {
     return false
   }
 
   if (data.version === version) {
-    if (data.lastUpdatedBy === userId) {
+    if (data.lastUpdatedBy === serverId) {
       return false
     }
 
-    if (data.lastUpdatedBy > userId) {
+    if (data.lastUpdatedBy > serverId) {
       return false
     }
   }
@@ -25,15 +24,14 @@ export const shouldUpdate = (data, version, userId) => {
   return true
 }
 
-export const update = (data, value, version, userId) => {
-  if (!shouldUpdate(data, version, userId)) {
+export const update = (data, value, version, serverId) => {
+  if (!shouldUpdate(data, version, serverId)) {
     return null
   }
 
   return {
     value,
     version,
-    createdBy: data.createdBy,
-    lastUpdatedBy: userId,
+    lastUpdatedBy: serverId,
   }
 }

@@ -1,21 +1,29 @@
 import Memory from './memory.js'
-import History, { operation } from './history-reversable.js'
+import History, { operation } from './history.js'
 import { PRIMITIVE } from './types.js'
 
 const SERVER_ID = '1234abc'
+let serverVersion = 0
 
-const lwwSet = new Memory(SERVER_ID, {
+const memory = new Memory(SERVER_ID, {
   name: PRIMITIVE.STRING,
-  age: PRIMITIVE.STRING,
+  age: PRIMITIVE.NUMBER,
 })
 
-lwwSet.setValue('James', { name: 'James', age: 29 }, 'user1')
-lwwSet.setValue('Jam', { name: 'Jam', age: 27 }, 'user2')
-lwwSet.setValue('Jim', { name: 'Jim', age: 24 }, 'user3')
-console.log(lwwSet.getValue('James'))
-console.log(lwwSet.getValue('Jam'))
-console.log(lwwSet.getValue('Jim'))
-console.log(lwwSet.where(['age'], '>=', 25))
+memory.setValue('James', { name: 'James', age: 29 }, serverVersion, SERVER_ID)
+serverVersion++
+memory.setValue('Jam', { name: 'Jam', age: 27 }, serverVersion, SERVER_ID)
+serverVersion++
+memory.setValue('Jim', { name: 'Jim', age: 24 }, serverVersion, SERVER_ID)
+serverVersion++
+console.log(memory.getValue('James'))
+console.log(memory.getValue('Jam'))
+console.log(memory.getValue('Jim'))
+console.log(memory.where(['age'], '>=', 25))
+console.log(memory.getChanges(0, SERVER_ID))
+console.log(memory.getChanges(1, SERVER_ID))
+console.log(memory.getChanges(2, SERVER_ID))
+console.log(memory.getChanges(3, SERVER_ID))
 
 // The history is currently not connected to the memory. It will be in the future however.
 const history = new History()
