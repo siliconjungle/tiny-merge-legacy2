@@ -55,6 +55,8 @@ class Memory extends EventEmitter {
     }
   }
 
+  // Once add and delete operations are added, then you send the full object on creation
+  // and delta on replace, and delete does not need any object data.
   applyTransaction(transaction, version, serverId) {
     transaction.operations.forEach((operation) => {
       if (operation.type === OPERATION.SET) {
