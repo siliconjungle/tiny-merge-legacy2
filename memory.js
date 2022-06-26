@@ -1,5 +1,6 @@
 import EventEmitter from 'events'
 import * as flatObject from './flat-object.js'
+import { OPERATION } from './history.js'
 import { where } from './queries.js'
 import { valueIsType } from './types.js'
 
@@ -32,6 +33,10 @@ class Memory extends EventEmitter {
     return { key, value: flatObject.getChildByKey(this.values, key) }
   }
 
+  getAll() {
+    return this.values
+  }
+
   // There should be a create value and delete value method as well.
   // Each time a value is created, or deleted, it should be stored in a cache related to that key.
   setValue(key, value, version, serverId) {
@@ -48,6 +53,14 @@ class Memory extends EventEmitter {
     if (changes !== null) {
       this.emit(key, key, changes)
     }
+  }
+
+  applyTransaction(transaction, version, serverId) {
+    transaction.operations.forEach((operation) => {
+      if (operation.type === OPERATION.SET) {
+        this.setValue(operation.key, operation.value, version, serverId)
+      }
+    })
   }
 }
 
