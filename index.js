@@ -24,6 +24,7 @@ console.log(memory.getChanges(0, SERVER_ID))
 console.log(memory.getChanges(1, SERVER_ID))
 console.log(memory.getChanges(2, SERVER_ID))
 console.log(memory.getChanges(3, SERVER_ID))
+console.log(memory.getChangesWhere(0, SERVER_ID, ['age'], '>=', 25))
 
 // The history is currently not connected to the memory. It will be in the future however.
 const history = new History()

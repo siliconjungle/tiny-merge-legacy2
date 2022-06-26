@@ -20,10 +20,16 @@ class Memory extends EventEmitter {
     return flatObject.getChangesSinceVersion(this.values, version, serverId)
   }
 
+  getChangesWhere(version, serverId, path, operator, value) {
+    return where(this.getChanges(version, serverId), path, operator, value)
+  }
+
   getValue(key) {
     return { key, value: flatObject.getChildByKey(this.values, key) }
   }
 
+  // There should be a create value and delete value method as well.
+  // Each time a value is created, or deleted, it should be stored in a cache related to that key.
   setValue(key, value, version, serverId) {
     if (!valueIsType(value, this.type)) {
       return
