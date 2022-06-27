@@ -17,7 +17,7 @@ class Memory extends EventEmitter {
     return where(this.values, path, operator, value)
   }
 
-  hasChildChanged(version, userId, key) {
+  hasDocumentChanged(version, userId, key) {
     return flatObject.hasChildChanged(this.values, version, userId, key)
   }
 
