@@ -72,6 +72,7 @@ class Memory extends EventEmitter {
     })
   }
 
+  // We need to add a generic method for updating the server version.
   onConnect(serverVersion, userId, data) {
     if (data === undefined) {
       // In the future you should be able to get all values for
