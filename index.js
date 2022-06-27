@@ -3,6 +3,8 @@ import History, { operation } from './history.js'
 import { PRIMITIVE } from './types.js'
 
 const SERVER_ID = '1234abc'
+const USER_ID = '1234def'
+const USER_ID2 = '1234ghi'
 let serverVersion = 0
 
 const memory = new Memory(SERVER_ID, {
@@ -10,20 +12,20 @@ const memory = new Memory(SERVER_ID, {
   age: PRIMITIVE.NUMBER,
 })
 
-memory.setValue('James', { name: 'James', age: 29 }, serverVersion, SERVER_ID)
+memory.setValue('James', { name: 'James', age: 29 }, serverVersion, USER_ID)
 serverVersion++
-memory.setValue('Jam', { name: 'Jam', age: 27 }, serverVersion, SERVER_ID)
+memory.setValue('Jam', { name: 'Jam', age: 27 }, serverVersion, USER_ID2)
 serverVersion++
-memory.setValue('Jim', { name: 'Jim', age: 24 }, serverVersion, SERVER_ID)
+memory.setValue('Jim', { name: 'Jim', age: 24 }, serverVersion, USER_ID)
 serverVersion++
 console.log(memory.getValue('James'))
 console.log(memory.getValue('Jam'))
 console.log(memory.getValue('Jim'))
 console.log(memory.where(['age'], '>=', 25))
 console.log(memory.getChanges(0, SERVER_ID))
-console.log(memory.getChanges(1, SERVER_ID))
-console.log(memory.getChanges(2, SERVER_ID))
-console.log(memory.getChanges(3, SERVER_ID))
+console.log(memory.getChanges(1, USER_ID))
+console.log(memory.getChanges(2, USER_ID2))
+console.log(memory.getChanges(3, USER_ID))
 console.log(memory.getChangesWhere(0, SERVER_ID, ['age'], '>=', 25))
 
 // The history is currently not connected to the memory. It will be in the future however.

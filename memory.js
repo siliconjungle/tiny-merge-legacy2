@@ -17,16 +17,16 @@ class Memory extends EventEmitter {
     return where(this.values, path, operator, value)
   }
 
-  hasChildChanged(version, serverId, key) {
-    return flatObject.hasChildChanged(this.values, version, serverId, key)
+  hasChildChanged(version, userId, key) {
+    return flatObject.hasChildChanged(this.values, version, userId, key)
   }
 
-  getChanges(version, serverId) {
-    return flatObject.getChangesSinceVersion(this.values, version, serverId)
+  getChanges(version, userId) {
+    return flatObject.getChangesSinceVersion(this.values, version, userId)
   }
 
-  getChangesWhere(version, serverId, path, operator, value) {
-    return where(this.getChanges(version, serverId), path, operator, value)
+  getChangesWhere(version, userId, path, operator, value) {
+    return where(this.getChanges(version, userId), path, operator, value)
   }
 
   getValue(key) {
@@ -39,7 +39,7 @@ class Memory extends EventEmitter {
 
   // There should be a create value and delete value method as well.
   // Each time a value is created, or deleted, it should be stored in a cache related to that key.
-  setValue(key, value, version, serverId) {
+  setValue(key, value, version, userId) {
     if (!valueIsType(value, this.type)) {
       return
     }
@@ -48,7 +48,7 @@ class Memory extends EventEmitter {
       key,
       value,
       version,
-      serverId
+      userId
     )
     if (changes !== null) {
       this.emit(key, key, changes)
@@ -57,10 +57,10 @@ class Memory extends EventEmitter {
 
   // Once add and delete operations are added, then you send the full object on creation
   // and delta on replace, and delete does not need any object data.
-  applyTransaction(transaction, version, serverId) {
+  applyTransaction(transaction, version, userId) {
     transaction.operations.forEach((operation) => {
       if (operation.type === OPERATION.SET) {
-        this.setValue(operation.key, operation.value, version, serverId)
+        this.setValue(operation.key, operation.value, version, userId)
       }
     })
   }

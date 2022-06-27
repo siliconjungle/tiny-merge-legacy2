@@ -9,12 +9,12 @@ export const create = (/* value, serverId */) => {
   return flatObject
 }
 
-export const setChildByKey = (flatObject, key, value, version, serverId) => {
+export const setChildByKey = (flatObject, key, value, version, userId) => {
   if (flatObject[key] === undefined) {
-    flatObject[key] = tiny.create(value, version, serverId)
+    flatObject[key] = tiny.create(value, version, userId)
     return flatObject[key]
   } else {
-    return tiny.update(flatObject[key], value, version, serverId)
+    return tiny.update(flatObject[key], value, version, userId)
   }
 }
 
@@ -26,16 +26,16 @@ export const getChildByKey = (flatObject, key) => {
   return flatObject[key] ?? null
 }
 
-export const hasChildChanged = (flatObject, version, serverId, key) => {
+export const hasChildChanged = (flatObject, version, userId, key) => {
   const value = flatObject[key]
-  return !tiny.shouldUpdate(value, version, serverId)
+  return !tiny.shouldUpdate(value, version, userId)
 }
 
-export const getChangesSinceVersion = (flatObject, version, serverId) => {
+export const getChangesSinceVersion = (flatObject, version, userId) => {
   const changes = {}
   for (const key in flatObject) {
     const value = flatObject[key]
-    if (!tiny.shouldUpdate(value, version, serverId)) {
+    if (!tiny.shouldUpdate(value, version, userId)) {
       changes[key] = value
     }
   }
