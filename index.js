@@ -5,7 +5,7 @@ import { PRIMITIVE } from './types.js'
 const SERVER_ID = '1234abc'
 const USER_ID = '1234def'
 const USER_ID2 = '1234ghi'
-let serverVersion = 0
+let serverVersion = [0, SERVER_ID]
 
 const memory = new Memory(SERVER_ID, {
   name: PRIMITIVE.STRING,
@@ -13,11 +13,14 @@ const memory = new Memory(SERVER_ID, {
 })
 
 memory.setValue('James', { name: 'James', age: 29 }, serverVersion, USER_ID)
-serverVersion++
+serverVersion[0]++
+serverVersion[1] = USER_ID
 memory.setValue('Jam', { name: 'Jam', age: 27 }, serverVersion, USER_ID2)
-serverVersion++
+serverVersion[0]++
+serverVersion[1] = USER_ID2
 memory.setValue('Jim', { name: 'Jim', age: 24 }, serverVersion, USER_ID)
-serverVersion++
+serverVersion[0]++
+serverVersion[1] = USER_ID
 console.log(memory.getValue('James'))
 console.log(memory.getValue('Jam'))
 console.log(memory.getValue('Jim'))

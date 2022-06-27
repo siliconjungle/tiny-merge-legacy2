@@ -37,6 +37,13 @@ class Memory extends EventEmitter {
     return this.values
   }
 
+  // If we separate the values out of the last writer wins registers then we don't need to split them up like this.
+  getAllValues() {
+    return Object.keys(this.values).map((key) => {
+      return this.values[key].value
+    })
+  }
+
   // There should be a create value and delete value method as well.
   // Each time a value is created, or deleted, it should be stored in a cache related to that key.
   setValue(key, value, version, userId) {
@@ -63,6 +70,22 @@ class Memory extends EventEmitter {
         this.setValue(operation.key, operation.value, version, userId)
       }
     })
+  }
+
+  onConnect(serverVersion, userId, data) {
+    if (data === undefined) {
+      // In the future you should be able to get all values for
+      // a specific query or just the value of specific elements.
+      // The connection logic should lump it all together.
+      return [serverVersion, this.getAllValues()]
+    } else {
+      const [version, transaction] = data
+      this.applyTransaction(transaction, version + 1, userId)
+      return [
+        Math.max(serverVersion, version + 1),
+        this.getChanges(version, userId),
+      ]
+    }
   }
 }
 
