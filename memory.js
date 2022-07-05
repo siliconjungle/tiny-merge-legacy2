@@ -22,7 +22,7 @@ class Memory extends EventEmitter {
     return createDiff(this.type.definition, this.values[key], value)
   }
 
-  create(key, value, sequence, userId, event) {
+  create(key, value, sequence, userId) {
     if (!valueIsType(value, this.type.definition)) {
       return
     }
@@ -31,7 +31,7 @@ class Memory extends EventEmitter {
     this.versions[key] = shelf.create(value, sequence, userId)
   }
 
-  update(key, diff, sequence, userId, event) {
+  update(key, diff, sequence, userId) {
     if (!valueIsType(value, this.type.definition)) {
       return
     }
