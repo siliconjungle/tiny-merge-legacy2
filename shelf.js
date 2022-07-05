@@ -20,6 +20,14 @@ export const filterDiffToApply = (shelf, sequence, userId, diff) => {
   return filteredDiff
 }
 
+export const shouldCreate = (shelf, sequence, userId) => {
+  const currentVersion = shelf?.['/']
+  if (currentVersion === undefined) {
+    return true
+  }
+  return tiny.shouldSet(currentVersion, sequence, userId)
+}
+
 export const setVersionAtPath = (shelf, path, sequence, userId) => {
   shelf[fromPathToKey(path)] = tiny.create(sequence, userId)
 }

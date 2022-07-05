@@ -1,14 +1,12 @@
 import EventEmitter from 'events'
 import * as shelf from './shelf.js'
 import * as type from './type.js'
-import { createDiff, deepPatch } from './utils.js'
+import { createDiff, deepPatch, OPERATION } from './utils.js'
 import { valueIsType } from './type.js'
 
-const MEMORY_EVENT = {
-  CREATE_LOCAL: 'create-local',
-  UPDATE_LOCAL: 'update-local',
-  CREATE_REMOTE: 'create-remote',
-  UPDATE_REMOTE: 'update-remote',
+export const MEMORY_EVENT = {
+  APPLY_LOCAL: 'apply-local',
+  APPLY_REMOTE: 'apply-remote',
 }
 
 class Memory extends EventEmitter {
@@ -31,15 +29,6 @@ class Memory extends EventEmitter {
 
     this.values[key] = value
     this.versions[key] = shelf.create(value, sequence, userId)
-    this.emit(event, sequence, userId, value)
-  }
-
-  createLocal(key, value, sequence, userId) {
-    this.create(key, value, sequence, userId, MEMORY_EVENT.CREATE_LOCAL)
-  }
-
-  createRemote(key, value, sequence, userId) {
-    this.create(key, value, sequence, userId, MEMORY_EVENT.CREATE_REMOTE)
   }
 
   update(key, diff, sequence, userId, event) {
@@ -67,17 +56,43 @@ class Memory extends EventEmitter {
       )
 
       this.values[key] = deepPatch(this.values[key], filteredDiff)
-
-      this.emit(event, sequence, userId, filteredDiff)
     }
   }
 
-  updateLocal(key, diff, sequence, userId) {
-    this.update(key, diff, sequence, userId, MEMORY_EVENT.UPDATE_LOCAL)
+  applyOperations(ops, sequence, userId, event) {
+    const filteredOps = ops.filter((op) => {
+      const [type, key, ...options] = op
+      switch (type) {
+        case OPERATION.CREATE: {
+          return shelf.shouldCreate(this.versions[key], sequence, userId)
+        }
+        case OPERATION.UPDATE: {
+          return (
+            shelf.filterDiffToApply(
+              this.versions[key],
+              sequence,
+              userId,
+              options[0]
+            ).length > 0
+          )
+        }
+        default: {
+          return false
+        }
+      }
+    })
+
+    if (filteredOps.length > 0) {
+      this.emit(event, ops, sequence, userId)
+    }
   }
 
-  updateRemote(key, diff, sequence, userId) {
-    this.update(key, diff, sequence, userId, MEMORY_EVENT.UPDATE_REMOTE)
+  applyOperationsLocal(ops, sequence, userId) {
+    this.applyOperations(ops, sequence, userId, MEMORY_EVENT.APPLY_LOCAL)
+  }
+
+  applyOperationsRemote(ops, sequence, userId) {
+    this.applyOperations(ops, sequence, userId, MEMORY_EVENT.APPLY_REMOTE)
   }
 }
 

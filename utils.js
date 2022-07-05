@@ -75,3 +75,17 @@ export const deepPatch = (value, diff) => {
   })
   return valueCopy
 }
+
+export const OPERATION = {
+  CREATE: 'create',
+  UPDATE: 'update',
+}
+
+// To filter operations you should look at the base version at the key
+// If it doesn't exist you can always create one.
+// For updates you need to filter each of the elements in the diff.
+// If there are no elements left, then you don't need to apply it.
+export const operation = {
+  create: (key, value) => [OPERATION.CREATE, key, value],
+  update: (key, diff) => [OPERATION.UPDATE, key, diff],
+}
