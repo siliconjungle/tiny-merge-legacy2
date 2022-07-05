@@ -1,7 +1,7 @@
 import EventEmitter from 'events'
 import * as shelf from './shelf.js'
 import * as type from './type.js'
-import { createDiff, deepPatch, OPERATION } from './utils.js'
+import { createDiff, deepPatch, OPERATION, deepCopy } from './utils.js'
 import { valueIsType } from './type.js'
 
 export const MEMORY_EVENT = {
@@ -16,6 +16,14 @@ class Memory extends EventEmitter {
     this.values = {}
     this.versions = {}
     this.type = type.create(typeDefinition)
+  }
+
+  getAllVersions() {
+    return deepCopy(this.versions)
+  }
+
+  getVersionsByKey(key) {
+    return deepCopy(this.versions[key])
   }
 
   getDiffByKey(key, value) {
@@ -58,6 +66,8 @@ class Memory extends EventEmitter {
       this.values[key] = deepPatch(this.values[key], filteredDiff)
     }
   }
+
+  applyChanges(changes) {}
 
   applyOperations(ops, sequence, userId, event) {
     const filteredOps = ops.filter((op) => {
