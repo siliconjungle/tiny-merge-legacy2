@@ -1,92 +1,69 @@
 import EventEmitter from 'events'
-import * as flatObject from './flat-object.js'
-import { OPERATION } from './history.js'
-import { where } from './queries.js'
-import { valueIsType } from './types.js'
+import * as shelf from './shelf.js'
+import * as type from './type.js'
+import { createDiff } from './utils.js'
+import { valueIsType } from './type.js'
+
+const MEMORY_EVENT = {
+  CREATE: 'create',
+  UPDATE: 'update',
+  DELETE: 'delete',
+}
 
 class Memory extends EventEmitter {
-  constructor(serverId, type) {
+  constructor(typeDefinition) {
     super()
     this.setMaxListeners(0)
-    this.type = type
-    this.serverId = serverId
-    this.values = flatObject.create({}, serverId)
+    this.values = {}
+    this.versions = {}
+    this.type = type.create(typeDefinition)
   }
 
-  where(path, operator, value) {
-    return where(this.values, path, operator, value)
+  getDiffByKey(key, value) {
+    return createDiff(this.type.definition, this.values[key], value)
   }
 
-  hasDocumentChanged(version, userId, key) {
-    return flatObject.hasChildChanged(this.values, version, userId, key)
-  }
-
-  getChanges(version, userId) {
-    return flatObject.getChangesSinceVersion(this.values, version, userId)
-  }
-
-  getChangesWhere(version, userId, path, operator, value) {
-    return where(this.getChanges(version, userId), path, operator, value)
-  }
-
-  getValue(key) {
-    return { key, value: flatObject.getChildByKey(this.values, key) }
-  }
-
-  getAll() {
-    return this.values
-  }
-
-  // If we separate the values out of the last writer wins registers then we don't need to split them up like this.
-  getAllValues() {
-    return Object.keys(this.values).map((key) => {
-      return this.values[key].value
-    })
-  }
-
-  // There should be a create value and delete value method as well.
-  // Each time a value is created, or deleted, it should be stored in a cache related to that key.
-  setValue(key, value, version, userId) {
-    if (!valueIsType(value, this.type)) {
+  create(key, value, sequence, userId) {
+    if (!valueIsType(value, this.type.definition)) {
       return
     }
-    const changes = flatObject.setChildByKey(
-      this.values,
-      key,
-      value,
-      version,
-      userId
+
+    this.values[key] = value
+    this.versions[key] = shelf.create(value, sequence, userId)
+    this.emit(MEMORY_EVENT.CREATE, sequence, userId, value)
+  }
+
+  update(key, diff, sequence, userId) {
+    if (!valueIsType(value, this.type.definition)) {
+      return
+    }
+
+    if (this.values[key] === undefined) {
+      return
+    }
+
+    const filteredDiff = shelf.filterDiffToApply(
+      this.versions[key],
+      sequence,
+      userId,
+      diff
     )
-    if (changes !== null) {
-      this.emit(key, key, changes)
+
+    if (filteredDiff.length > 0) {
+      shelf.setVersionsFromDiff(
+        this.versions[key],
+        filteredDiff,
+        sequence,
+        userId
+      )
+      this.emit(MEMORY_EVENT.UPDATE, sequence, userId, filteredDiff)
     }
   }
 
-  // Once add and delete operations are added, then you send the full object on creation
-  // and delta on replace, and delete does not need any object data.
-  applyTransaction(transaction, version, userId) {
-    transaction.operations.forEach((operation) => {
-      if (operation.type === OPERATION.SET) {
-        this.setValue(operation.key, operation.value, version, userId)
-      }
-    })
-  }
-
-  // We need to add a generic method for updating the server version.
-  onConnect(serverVersion, userId, data) {
-    if (data === undefined) {
-      // In the future you should be able to get all values for
-      // a specific query or just the value of specific elements.
-      // The connection logic should lump it all together.
-      return [serverVersion, this.getAllValues()]
-    } else {
-      const [version, transaction] = data
-      this.applyTransaction(transaction, version + 1, userId)
-      return [
-        Math.max(serverVersion, version + 1),
-        this.getChanges(version, userId),
-      ]
-    }
+  delete(key, sequence, userId) {
+    delete this.values[key]
+    delete this.versions[key]
+    this.emit(MEMORY_EVENT.DELETE, sequence, userId)
   }
 }
 

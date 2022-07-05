@@ -1,7 +1,3 @@
-// types are defined as json objects where each field's value is the primitive type.
-// arrays and objects represent their own type.
-// e.g. { name: string, age: number, position: { x: number, y: number } }
-
 export const PRIMITIVE = {
   STRING: 'string',
   NUMBER: 'number',
@@ -34,27 +30,3 @@ export const getPrimitive = (value) => {
 
 export const isPrimitive = (value, primitive) =>
   getPrimitive(value) === primitive
-
-const getPrimitiveFromType = (type) => {
-  const typePrimitive = getPrimitive(type)
-  return typePrimitive === PRIMITIVE.STRING ? type : typePrimitive
-}
-
-export const valueIsType = (value, type) => {
-  const primitive = getPrimitive(value)
-  const typePrimitive = getPrimitiveFromType(type)
-
-  if (primitive !== typePrimitive) {
-    return false
-  }
-
-  if (primitive === PRIMITIVE.ARRAY) {
-    return value.every((v, i) => valueIsType(v, type[i]))
-  }
-
-  if (primitive === PRIMITIVE.OBJECT) {
-    return Object.keys(value).every((k) => valueIsType(value[k], type[k]))
-  }
-
-  return true
-}
