@@ -2,6 +2,10 @@
 
 Manages state synchronisation.
 
+## Tiny Merge core algorithm.
+
+<img width="1140" alt="Screen Shot 2022-07-01 at 11 46 10 am" src="https://user-images.githubusercontent.com/71357672/176809704-6603b047-1a8c-46a1-89ec-3d2aecbae43e.png">
+
 ## License
 
 MIT License
