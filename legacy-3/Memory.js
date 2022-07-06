@@ -73,6 +73,8 @@ class Memory extends EventEmitter {
     const filteredOps = ops.filter((op) => {
       const [type, key, ...options] = op
       switch (type) {
+        // Bake the version numbers into each operation
+        // It takes up more space, but then you don't need a get changes method.
         case OPERATION.CREATE: {
           return shelf.shouldCreate(this.versions[key], sequence, userId)
         }
