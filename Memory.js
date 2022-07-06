@@ -35,7 +35,7 @@ class Memory extends EventEmitter {
   filterOperations(operations) {
     return operations
       .filter((operation) => {
-        const [id, [sequence, userId]] = operation[0]
+        const [id, [sequence, userId]] = operation
         return collection.shouldSetChild(this.versions, id, sequence, userId)
       })
       .map((operation) => {
